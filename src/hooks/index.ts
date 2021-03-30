@@ -4,11 +4,18 @@ import { firebase } from "../firebase";
 import { collatedTasksExist } from "../helpers";
 
 type Task = {
-  id?: string;
+  id: string;
   archived?: boolean;
   date?: string;
   projectId?: string;
   task?: string;
+  userId?: string;
+};
+
+type Project = {
+  id?: string;
+  projectId?: string;
+  name?: string;
   userId?: string;
 };
 
@@ -62,4 +69,29 @@ export const useTasks = (selectedProject: string | number) => {
   }, [selectedProject]);
 
   return { tasks, archivedTasks };
+};
+
+export const useProjects = () => {
+  const [projects, setProjects] = useState<Project[]>([]);
+
+  useEffect(() => {
+    firebase
+      .firestore()
+      .collection("projects")
+      .where("userId", "==", "MXHMcYrLWrLprumJNeCx")
+      .orderBy("projectId")
+      .get()
+      .then((snapshot) => {
+        const allProjects: Project[] = snapshot.docs.map((project) => ({
+          ...project.data(),
+          id: project.id,
+        }));
+
+        if (JSON.stringify(allProjects) !== JSON.stringify(projects)) {
+          setProjects(allProjects);
+        }
+      });
+  }, [projects]);
+
+  return { projects, setProjects }
 };
