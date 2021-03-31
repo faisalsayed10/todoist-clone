@@ -3,25 +3,9 @@ import { useEffect, useState } from "react";
 import { firebase } from "../firebase";
 import { collatedTasksExist } from "../helpers";
 
-type Task = {
-  id: string;
-  archived?: boolean;
-  date?: string;
-  projectId?: string;
-  task?: string;
-  userId?: string;
-};
-
-type Project = {
-  id?: string;
-  projectId?: string;
-  name?: string;
-  userId?: string;
-};
-
-export const useTasks = (selectedProject: string | number) => {
-  const [tasks, setTasks] = useState<Task[]>([]);
-  const [archivedTasks, setArchivedTasks] = useState<Task[]>([]);
+export const useTasks = (selectedProject) => {
+  const [tasks, setTasks] = useState([]);
+  const [archivedTasks, setArchivedTasks] = useState([]);
 
   useEffect(() => {
     let unsubscribe = firebase
@@ -44,7 +28,7 @@ export const useTasks = (selectedProject: string | number) => {
 
     // @ts-ignore
     unsubscribe = unsubscribe.onSnapshot((snapshot) => {
-      const newTasks: Task[] = snapshot.docs.map((task) => {
+      const newTasks = snapshot.docs.map((task) => {
         return {
           id: task.id,
           ...task.data(),
@@ -63,8 +47,6 @@ export const useTasks = (selectedProject: string | number) => {
 
       setArchivedTasks(newTasks.filter((task) => task.archived !== false));
     });
-
-    // @ts-ignore
     return () => unsubscribe();
   }, [selectedProject]);
 
@@ -72,7 +54,7 @@ export const useTasks = (selectedProject: string | number) => {
 };
 
 export const useProjects = () => {
-  const [projects, setProjects] = useState<Project[]>([]);
+  const [projects, setProjects] = useState([]);
 
   useEffect(() => {
     firebase
@@ -82,7 +64,7 @@ export const useProjects = () => {
       .orderBy("projectId")
       .get()
       .then((snapshot) => {
-        const allProjects: Project[] = snapshot.docs.map((project) => ({
+        const allProjects = snapshot.docs.map((project) => ({
           ...project.data(),
           id: project.id,
         }));
